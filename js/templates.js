@@ -3,6 +3,102 @@
  * 定义多套简历模板的渲染函数和样式
  */
 
+// ============================================================
+// 色彩主题定义
+// ============================================================
+const ColorThemes = {
+    navy: {
+        name: '经典深蓝',
+        headerBg: 'linear-gradient(135deg, #1e293b, #334155)',
+        headerText: '#ffffff',
+        accent: '#3b82f6',
+        accentLight: '#dbeafe',
+        sectionBorder: '#1e293b',
+        titleColor: '#1e293b',
+        subColor: '#3b82f6',
+        textColor: '#334155',
+        lightBg: '#f8fafc',
+        borderColor: '#e2e8f0',
+        skillBg: '#f1f5f9',
+        skillBorder: '#e2e8f0',
+    },
+    emerald: {
+        name: '翡翠绿',
+        headerBg: 'linear-gradient(135deg, #064e3b, #059669)',
+        headerText: '#ffffff',
+        accent: '#059669',
+        accentLight: '#d1fae5',
+        sectionBorder: '#059669',
+        titleColor: '#064e3b',
+        subColor: '#059669',
+        textColor: '#374151',
+        lightBg: '#f0fdf4',
+        borderColor: '#d1fae5',
+        skillBg: '#ecfdf5',
+        skillBorder: '#a7f3d0',
+    },
+    rose: {
+        name: '玫瑰红',
+        headerBg: 'linear-gradient(135deg, #881337, #e11d48)',
+        headerText: '#ffffff',
+        accent: '#e11d48',
+        accentLight: '#ffe4e6',
+        sectionBorder: '#e11d48',
+        titleColor: '#881337',
+        subColor: '#e11d48',
+        textColor: '#374151',
+        lightBg: '#fff1f2',
+        borderColor: '#fecdd3',
+        skillBg: '#fff1f2',
+        skillBorder: '#fecdd3',
+    },
+    amber: {
+        name: '琥珀橙',
+        headerBg: 'linear-gradient(135deg, #78350f, #d97706)',
+        headerText: '#ffffff',
+        accent: '#d97706',
+        accentLight: '#fef3c7',
+        sectionBorder: '#d97706',
+        titleColor: '#78350f',
+        subColor: '#d97706',
+        textColor: '#374151',
+        lightBg: '#fffbeb',
+        borderColor: '#fde68a',
+        skillBg: '#fffbeb',
+        skillBorder: '#fde68a',
+    },
+    sky: {
+        name: '天空蓝',
+        headerBg: 'linear-gradient(135deg, #0c4a6e, #0284c7)',
+        headerText: '#ffffff',
+        accent: '#0284c7',
+        accentLight: '#e0f2fe',
+        sectionBorder: '#0284c7',
+        titleColor: '#0c4a6e',
+        subColor: '#0284c7',
+        textColor: '#374151',
+        lightBg: '#f0f9ff',
+        borderColor: '#bae6fd',
+        skillBg: '#f0f9ff',
+        skillBorder: '#bae6fd',
+    },
+    slate: {
+        name: '石墨灰',
+        headerBg: 'linear-gradient(135deg, #0f172a, #475569)',
+        headerText: '#ffffff',
+        accent: '#475569',
+        accentLight: '#f1f5f9',
+        sectionBorder: '#475569',
+        titleColor: '#0f172a',
+        subColor: '#475569',
+        textColor: '#374151',
+        lightBg: '#f8fafc',
+        borderColor: '#cbd5e1',
+        skillBg: '#f1f5f9',
+        skillBorder: '#cbd5e1',
+    },
+};
+
 const Templates = {
     // 模板注册表
     registry: {},
@@ -32,12 +128,40 @@ const Templates = {
      * @param {Object} data - 简历数据
      * @returns {string} HTML 字符串
      */
-    render(templateId, data) {
+    render(templateId, data, themeId, fontFamily, textColor) {
         const tmpl = this.get(templateId);
-        const mainHTML = tmpl.renderer(data);
+        const mainHTML = tmpl.renderer(data, themeId);
         const extraCSS = tmpl.extraCSS || '';
         const baseCSS = this.getBaseCSS();
-        return `<style>${baseCSS}\n${extraCSS}</style><div class="resume-template tmpl-${templateId}">${mainHTML}</div>`;
+        const hasFont = !!fontFamily;
+        const hasColor = !!textColor;
+        let globalStyle = '';
+        let extraClasses = '';
+        if (hasFont || hasColor) {
+            const vars = [];
+            if (hasFont) vars.push(`--global-font: ${fontFamily};`);
+            if (hasColor) vars.push(`--global-text-color: ${textColor};`);
+            // 声明 CSS 变量在根元素
+            const varRule = `.resume-template.gf-gc{${vars.join('')}}`;
+            // 字体: 强制覆盖所有元素（安全，不影响布局）
+            const fontOverride = hasFont
+                ? `.resume-template.gf-gc,.resume-template.gf-gc *{font-family:var(--global-font) !important}`
+                : '';
+            // 文字颜色: 精确覆盖各模板的文字元素，保留侧边栏/头部设计色
+            const colorRules = hasColor ? [
+                `.resume-template.gf-gc{color:var(--global-text-color) !important}`,
+                `.resume-template.gf-gc .desc-text{color:var(--global-text-color) !important}`,
+                `.resume-template.gf-gc .item-title,.resume-template.gf-gc .item-subtitle{color:var(--global-text-color) !important}`,
+                `.resume-template.gf-gc .classic-name,.resume-template.gf-gc .classic-title,.resume-template.gf-gc .classic-contact span{color:var(--global-text-color) !important}`,
+                `.resume-template.gf-gc .pro-entry-title,.resume-template.gf-gc .pro-entry-sub,.resume-template.gf-gc .pro-section-title,.resume-template.gf-gc .pro-skill-text{color:var(--global-text-color) !important}`,
+                `.resume-template.gf-gc .modern-entry-title,.resume-template.gf-gc .modern-entry-company,.resume-template.gf-gc .modern-main-title{color:var(--global-text-color) !important}`,
+                `.resume-template.gf-gc .section-title,.resume-template.gf-gc .skill-tag-text,.resume-template.gf-gc .date-range,.resume-template.gf-gc .pro-entry-date{color:var(--global-text-color) !important}`,
+            ] : [];
+            const allRules = [varRule, fontOverride, ...colorRules].filter(Boolean);
+            globalStyle = `<style>${allRules.join('\n')}</style>`;
+            extraClasses = ' gf-gc';
+        }
+        return `${globalStyle}<style>${baseCSS}\n${extraCSS}</style><div class="resume-template tmpl-${templateId}${extraClasses}">${mainHTML}</div>`;
     },
 
     /**
@@ -53,8 +177,8 @@ const Templates = {
     getBaseCSS() {
         return `
             .resume-template {
-                font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
-                color: #333;
+                font-family: var(--global-font, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif);
+                color: var(--global-text-color, #333);
                 line-height: 1.6;
                 padding: 0;
             }
@@ -218,17 +342,30 @@ Templates.register('classic', '简约经典', (data) => {
 `);
 
 // ============================================================
-// 模板 2: 现代清新 (modern)
+// 模板 2: 现代清新 (modern) — 支持色彩主题
 // ============================================================
-Templates.register('modern', '现代清新', (data) => {
+Templates.register('modern', '现代清新', (data, themeId) => {
     const d = data || {};
     const personal = d.personal || {};
     const education = d.education || [];
     const experience = d.experience || [];
     const skills = d.skills || [];
     const projects = d.projects || [];
+    const theme = ColorThemes[themeId] || ColorThemes.navy;
+
+    const vars = `
+        --modern-sidebar-bg: ${theme.headerBg};
+        --modern-accent: ${theme.accent};
+        --modern-accent-light: ${theme.accentLight};
+        --modern-side-title: ${theme.titleColor};
+        --modern-sub-color: ${theme.subColor};
+        --modern-title-color: ${theme.titleColor};
+        --modern-dot-line: ${theme.accentLight};
+        --modern-border-color: ${theme.borderColor};
+    `;
 
     return `
+        <style>.modern-resume{${vars}}</style>
         <div class="modern-resume">
             <!-- 侧边栏 + 主内容 -->
             <div class="modern-layout">
@@ -328,7 +465,7 @@ Templates.register('modern', '现代清新', (data) => {
     .modern-layout { display: flex; min-height: 297mm; }
     .modern-sidebar {
         width: 220px;
-        background: linear-gradient(180deg, #4f46e5 0%, #7c3aed 100%);
+        background: var(--modern-sidebar-bg, linear-gradient(180deg, #4f46e5 0%, #7c3aed 100%));
         color: white;
         padding: 32px 20px;
         flex-shrink: 0;
@@ -346,45 +483,64 @@ Templates.register('modern', '现代清新', (data) => {
     .modern-skill-item { display: flex; justify-content: space-between; align-items: center; }
     .modern-skill-item span { font-size: 13px; }
     .modern-main { flex: 1; padding: 32px 28px; background: white; }
-    .modern-main-title { font-size: 17px; font-weight: 700; color: #4f46e5; padding-bottom: 6px; margin-bottom: 12px; border-bottom: 2px solid #e0e7ff; }
+    .modern-main-title { font-size: 17px; font-weight: 700; color: var(--modern-accent, #4f46e5); padding-bottom: 6px; margin-bottom: 12px; border-bottom: 2px solid var(--modern-accent-light, #e0e7ff); }
     .modern-section { margin-bottom: 22px; }
     .modern-entry { display: flex; gap: 12px; margin-bottom: 14px; position: relative; }
-    .modern-entry-dot { width: 10px; height: 10px; border-radius: 50%; background: #4f46e5; margin-top: 6px; flex-shrink: 0; position: relative; }
-    .modern-entry-dot::after { content: ''; position: absolute; top: 10px; left: 4px; width: 2px; height: calc(100% + 14px); background: #e0e7ff; }
+    .modern-entry-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--modern-accent, #4f46e5); margin-top: 6px; flex-shrink: 0; position: relative; }
+    .modern-entry-dot::after { content: ''; position: absolute; top: 10px; left: 4px; width: 2px; height: calc(100% + 14px); background: var(--modern-accent-light, #e0e7ff); }
     .modern-entry:last-child .modern-entry-dot::after { display: none; }
     .modern-entry-body { flex: 1; }
     .modern-entry-header { margin-bottom: 4px; }
-    .modern-entry-title { font-size: 15px; font-weight: 600; color: #1e293b; }
-    .modern-entry-company { font-size: 13px; color: #4f46e5; margin-left: 6px; }
+    .modern-entry-title { font-size: 15px; font-weight: 600; color: var(--modern-title-color, #1e293b); }
+    .modern-entry-company { font-size: 13px; color: var(--modern-accent, #4f46e5); margin-left: 6px; }
     .modern-entry-header .date-range { display: block; font-size: 12px; color: #94a3b8; margin-top: 2px; }
 `);
 
 // ============================================================
-// 模板 3: 专业商务 (professional)
+// 模板 3: 专业商务 (professional) — 支持色彩主题
 // ============================================================
-Templates.register('professional', '专业商务', (data) => {
+Templates.register('professional', '专业商务', (data, themeId) => {
     const d = data || {};
     const personal = d.personal || {};
     const education = d.education || [];
     const experience = d.experience || [];
     const skills = d.skills || [];
     const projects = d.projects || [];
+    const theme = ColorThemes[themeId] || ColorThemes.navy;
+
+    // 将主题色注入为 CSS 变量
+    const vars = `
+        --pro-header-bg: ${theme.headerBg};
+        --pro-header-text: ${theme.headerText};
+        --pro-accent: ${theme.accent};
+        --pro-accent-light: ${theme.accentLight};
+        --pro-section-border: ${theme.sectionBorder};
+        --pro-title-color: ${theme.titleColor};
+        --pro-sub-color: ${theme.subColor};
+        --pro-text-color: ${theme.textColor};
+        --pro-light-bg: ${theme.lightBg};
+        --pro-border-color: ${theme.borderColor};
+        --pro-skill-bg: ${theme.skillBg};
+        --pro-skill-border: ${theme.skillBorder};
+    `;
 
     return `
+        <style>.pro-resume{${vars}}</style>
         <div class="pro-resume">
-            <!-- 头部 -->
+            <!-- 头部 — 全宽深色区块，白色文字，无重叠问题 -->
             <div class="pro-header">
-                <div class="pro-header-bg"></div>
-                <div class="pro-header-content">
-                    ${personal.avatar ? `<div class="pro-avatar"><img src="${personal.avatar}" alt="头像"></div>` : ''}
-                    <div class="pro-header-text">
-                        <h1 class="pro-name">${personal.name || '你的姓名'}</h1>
-                        <div class="pro-title">${personal.title || '求职意向'}</div>
-                        <div class="pro-contact-bar">
-                            ${personal.phone ? `<span>${personal.phone}</span>` : ''}
-                            ${personal.email ? `<span>${personal.email}</span>` : ''}
-                            ${personal.location ? `<span>${personal.location}</span>` : ''}
+                <div class="pro-header-inner">
+                    <div class="pro-header-row">
+                        ${personal.avatar ? `<div class="pro-avatar"><img src="${personal.avatar}" alt="头像"></div>` : ''}
+                        <div class="pro-header-info">
+                            <h1 class="pro-name">${personal.name || '你的姓名'}</h1>
+                            <div class="pro-role">${personal.title || '求职意向'}</div>
                         </div>
+                    </div>
+                    <div class="pro-contact-row">
+                        ${personal.phone ? `<span>📞 ${personal.phone}</span>` : ''}
+                        ${personal.email ? `<span>✉️ ${personal.email}</span>` : ''}
+                        ${personal.location ? `<span>📍 ${personal.location}</span>` : ''}
                     </div>
                 </div>
             </div>
@@ -472,40 +628,34 @@ Templates.register('professional', '专业商务', (data) => {
         </div>
     `;
 }, `
-    /* 专业商务 专属样式 */
+    /* 专业商务 专属样式 — 使用 CSS 变量实现主题化 */
     .pro-resume { padding: 0; }
-    .pro-header { position: relative; margin-bottom: 0; }
-    .pro-header-bg { height: 80px; background: linear-gradient(135deg, #1e293b, #334155); }
-    .pro-header-content { display: flex; align-items: flex-end; gap: 20px; padding: 0 36px; margin-top: -40px; }
+    .pro-header { background: var(--pro-header-bg); padding: 28px 36px 20px; color: var(--pro-header-text); }
+    .pro-header-inner { max-width: 100%; }
+    .pro-header-row { display: flex; align-items: center; gap: 20px; }
     .pro-avatar { flex-shrink: 0; }
-    .pro-avatar img { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-    .pro-header-text { padding-bottom: 16px; flex: 1; }
-    .pro-name { font-size: 28px; font-weight: 700; color: #1e293b; }
-    .pro-title { font-size: 15px; color: #4f46e5; font-weight: 500; margin-top: 2px; }
-    .pro-contact-bar { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; font-size: 12px; color: #64748b; }
-    .pro-contact-bar span { padding-right: 12px; border-right: 1px solid #e2e8f0; }
-    .pro-contact-bar span:last-child { border-right: none; }
+    .pro-avatar img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.5); }
+    .pro-name { font-size: 28px; font-weight: 700; color: var(--pro-header-text); }
+    .pro-role { font-size: 15px; color: var(--pro-header-text); opacity: 0.85; font-weight: 400; margin-top: 2px; }
+    .pro-contact-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; font-size: 13px; opacity: 0.85; }
+    .pro-contact-row span { display: inline-flex; align-items: center; gap: 4px; }
     .pro-body { padding: 24px 36px 36px; }
     .pro-section { margin-bottom: 22px; }
-    .pro-section-title { font-size: 15px; font-weight: 700; color: #1e293b; padding-bottom: 6px; margin-bottom: 12px; border-bottom: 2px solid #334155; text-transform: uppercase; letter-spacing: 1px; }
+    .pro-section-title { font-size: 15px; font-weight: 700; color: var(--pro-title-color); padding-bottom: 6px; margin-bottom: 12px; border-bottom: 2px solid var(--pro-section-border); text-transform: uppercase; letter-spacing: 1px; }
     .pro-two-col { display: flex; gap: 32px; }
     .pro-col-left { flex: 1.4; }
     .pro-col-right { flex: 1; }
     .pro-entry { margin-bottom: 14px; }
     .pro-entry-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; gap: 12px; }
-    .pro-entry-title { font-size: 14px; font-weight: 600; color: #1e293b; }
-    .pro-entry-sub { font-size: 13px; color: #4f46e5; }
+    .pro-entry-title { font-size: 14px; font-weight: 600; color: var(--pro-title-color); }
+    .pro-entry-sub { font-size: 13px; color: var(--pro-sub-color); }
     .pro-entry-date { font-size: 12px; color: #94a3b8; white-space: nowrap; flex-shrink: 0; }
     .pro-skills { display: flex; flex-wrap: wrap; gap: 4px 16px; }
-    .pro-skill-text { font-size: 14px; font-weight: 500; color: #334155; }
-    .pro-skill { }
-    .pro-skill-name { font-size: 13px; font-weight: 500; color: #334155; margin-bottom: 3px; }
-    .pro-skill-bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
-    .pro-skill-fill { height: 100%; background: linear-gradient(90deg, #334155, #64748b); border-radius: 3px; }
+    .pro-skill-text { font-size: 14px; font-weight: 500; color: var(--pro-text-color); }
 
     @media (max-width: 800px) {
         .pro-two-col { flex-direction: column; gap: 0; }
-        .pro-header-content { flex-direction: column; align-items: center; text-align: center; margin-top: -50px; }
-        .pro-contact-bar { justify-content: center; }
+        .pro-header-row { flex-direction: column; align-items: center; text-align: center; }
+        .pro-contact-row { justify-content: center; }
     }
 `);

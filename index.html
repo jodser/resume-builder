@@ -14,13 +14,36 @@
             <h1 class="logo">📄 简历工坊</h1>
         </div>
         <div class="toolbar-center">
-            <div class="template-switcher">
-                <label for="templateSelect">模板：</label>
-                <select id="templateSelect">
-                    <option value="classic">简约经典</option>
-                    <option value="modern">现代清新</option>
-                    <option value="professional">专业商务</option>
-                </select>
+            <div class="toolbar-row">
+                <div class="template-switcher">
+                    <label for="templateSelect">模板：</label>
+                    <select id="templateSelect">
+                        <option value="classic">简约经典</option>
+                        <option value="modern">现代清新</option>
+                        <option value="professional">专业商务</option>
+                    </select>
+                </div>
+                <div class="theme-picker" id="themePicker" style="display:none">
+                    <label>配色：</label>
+                    <div class="theme-swatches" id="themeSwatches"></div>
+                </div>
+            </div>
+            <div class="toolbar-row">
+                <div class="font-picker">
+                    <label for="fontSelect">字体：</label>
+                    <select id="fontSelect">
+                        <option value="system-ui, sans-serif">系统默认</option>
+                        <option value="'PingFang SC', 'Microsoft YaHei', sans-serif">苹方 / 微软雅黑</option>
+                        <option value="'Noto Serif SC', 'Source Han Serif SC', serif">思源宋体</option>
+                        <option value="'KaiTi', 'STKaiti', serif">楷体</option>
+                        <option value="'SimSun', 'STSong', serif">宋体</option>
+                        <option value="'Roboto', 'Helvetica Neue', Arial, sans-serif">英文字体</option>
+                    </select>
+                </div>
+                <div class="color-picker-wrap">
+                    <label>文字颜色：</label>
+                    <div class="text-color-swatches" id="textColorSwatches"></div>
+                </div>
             </div>
         </div>
         <div class="toolbar-right">

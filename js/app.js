@@ -9,8 +9,21 @@
     // ===== 状态 =====
     let currentData = getDefaultData();
     let currentTemplate = 'classic';
+    let currentColorTheme = 'navy';
+    let currentFontFamily = '';
+    let currentTextColor = '';
     let saveTimer = null;
     let isSaving = false;
+
+    // 文字颜色预设
+    const TEXT_COLORS = [
+        { value: '#333333', label: '深灰（默认）' },
+        { value: '#1a1a1a', label: '纯黑' },
+        { value: '#555555', label: '柔和灰' },
+        { value: '#2c3e50', label: '深蓝灰' },
+        { value: '#5d4037', label: '暖棕' },
+        { value: '#1e3a5f', label: '藏蓝' },
+    ];
 
     // ===== DOM 缓存 =====
     const $ = (sel) => document.querySelector(sel);
@@ -41,6 +54,10 @@
         dom.addExperience = $('#addExperience');
         dom.addSkill = $('#addSkill');
         dom.addProject = $('#addProject');
+        dom.themePicker = $('#themePicker');
+        dom.themeSwatches = $('#themeSwatches');
+        dom.fontSelect = $('#fontSelect');
+        dom.textColorSwatches = $('#textColorSwatches');
     }
 
     // ===== 默认数据 =====
@@ -300,7 +317,7 @@
             cancelAnimationFrame(previewRenderTimer);
         }
         previewRenderTimer = requestAnimationFrame(() => {
-            const html = Templates.render(currentTemplate, currentData);
+            const html = Templates.render(currentTemplate, currentData, currentColorTheme, currentFontFamily, currentTextColor);
             dom.preview.innerHTML = html;
             previewRenderTimer = null;
         });
@@ -332,10 +349,78 @@
     // ===== 模板切换 =====
     function switchTemplate(templateId) {
         currentTemplate = templateId;
+        // 专业商务和现代清新模板显示配色选择器
+        if (dom.themePicker) {
+            dom.themePicker.style.display = (templateId === 'professional' || templateId === 'modern') ? 'flex' : 'none';
+        }
         renderPreview();
-        // 保存模板偏好
         try {
             localStorage.setItem('resume-builder-template', templateId);
+        } catch (e) { /* ignore */ }
+    }
+
+    // ===== 色彩主题 =====
+    function buildThemeSwatches() {
+        const container = dom.themeSwatches;
+        if (!container) return;
+        container.innerHTML = '';
+        Object.entries(ColorThemes).forEach(([id, theme]) => {
+            const swatch = document.createElement('button');
+            swatch.className = 'theme-swatch' + (id === currentColorTheme ? ' active' : '');
+            swatch.dataset.theme = id;
+            swatch.title = theme.name;
+            // 提取渐变的第一个颜色作为色块展示
+            const firstColor = theme.headerBg.match(/#[a-f0-9]{6}/)?.[0] || '#1e293b';
+            swatch.style.background = firstColor;
+            swatch.addEventListener('click', () => switchColorTheme(id));
+            container.appendChild(swatch);
+        });
+    }
+
+    function switchColorTheme(themeId) {
+        currentColorTheme = themeId;
+        dom.themeSwatches?.querySelectorAll('.theme-swatch').forEach(el => {
+            el.classList.toggle('active', el.dataset.theme === themeId);
+        });
+        renderPreview();
+        try {
+            localStorage.setItem('resume-builder-color-theme', themeId);
+        } catch (e) { /* ignore */ }
+    }
+
+    // ===== 字体选择 =====
+    function buildTextColorSwatches() {
+        const container = dom.textColorSwatches;
+        if (!container) return;
+        container.innerHTML = '';
+        TEXT_COLORS.forEach(c => {
+            const swatch = document.createElement('button');
+            const isActive = currentTextColor === c.value || (!currentTextColor && c.value === '#333333');
+            swatch.className = 'text-color-swatch' + (isActive ? ' active' : '');
+            swatch.dataset.color = c.value;
+            swatch.title = c.label;
+            swatch.style.background = c.value;
+            swatch.addEventListener('click', () => switchTextColor(c.value));
+            container.appendChild(swatch);
+        });
+    }
+
+    function switchTextColor(color) {
+        currentTextColor = color;
+        dom.textColorSwatches?.querySelectorAll('.text-color-swatch').forEach(el => {
+            el.classList.toggle('active', el.dataset.color === color);
+        });
+        renderPreview();
+        try {
+            localStorage.setItem('resume-builder-text-color', color);
+        } catch (e) { /* ignore */ }
+    }
+
+    function switchFont(fontFamily) {
+        currentFontFamily = fontFamily;
+        renderPreview();
+        try {
+            localStorage.setItem('resume-builder-font-family', fontFamily);
         } catch (e) { /* ignore */ }
     }
 
@@ -350,9 +435,16 @@
         Storage.clear();
         try {
             localStorage.removeItem('resume-builder-template');
+            localStorage.removeItem('resume-builder-color-theme');
+            localStorage.removeItem('resume-builder-font-family');
+            localStorage.removeItem('resume-builder-text-color');
         } catch (e) { /* ignore */ }
         currentData = getDefaultData();
+        currentFontFamily = '';
+        currentTextColor = '';
+        dom.fontSelect.value = '';
         populateForm(currentData);
+        buildTextColorSwatches();
         renderPreview();
         dom.saveStatus.textContent = '已重置';
         dom.saveStatus.className = 'save-status';
@@ -382,6 +474,18 @@
         // 模板切换
         dom.templateSelect?.addEventListener('change', (e) => {
             switchTemplate(e.target.value);
+        });
+
+        // 模板切换时刷新主题色块
+        dom.templateSelect?.addEventListener('change', () => {
+            if (dom.themePicker && dom.themePicker.style.display !== 'none') {
+                buildThemeSwatches();
+            }
+        });
+
+        // 字体选择
+        dom.fontSelect?.addEventListener('change', (e) => {
+            switchFont(e.target.value);
         });
 
         // 导出
@@ -414,6 +518,40 @@
                 currentTemplate = savedTmpl;
             }
         } catch (e) { /* ignore */ }
+
+        // 加载保存的配色主题偏好
+        try {
+            const savedTheme = localStorage.getItem('resume-builder-color-theme');
+            if (savedTheme && ColorThemes[savedTheme]) {
+                currentColorTheme = savedTheme;
+            }
+        } catch (e) { /* ignore */ }
+
+        // 加载保存的字体偏好
+        try {
+            const savedFont = localStorage.getItem('resume-builder-font-family');
+            if (savedFont) {
+                currentFontFamily = savedFont;
+                dom.fontSelect.value = savedFont;
+            }
+        } catch (e) { /* ignore */ }
+
+        // 加载保存的文字颜色偏好
+        try {
+            const savedColor = localStorage.getItem('resume-builder-text-color');
+            if (savedColor) {
+                currentTextColor = savedColor;
+            }
+        } catch (e) { /* ignore */ }
+
+        // 构建配色选择器
+        buildThemeSwatches();
+        // 构建文字颜色选择器
+        buildTextColorSwatches();
+        // 根据当前模板显示/隐藏配色选择器（专业商务和现代清新都支持）
+        if (dom.themePicker) {
+            dom.themePicker.style.display = (currentTemplate === 'professional' || currentTemplate === 'modern') ? 'flex' : 'none';
+        }
 
         // 加载保存的数据
         const hasSaved = loadSavedData();

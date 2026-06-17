@@ -54,8 +54,15 @@ html, body {
 
 .toolbar-center {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 4px;
+}
+
+.toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .template-switcher {
@@ -76,6 +83,110 @@ html, body {
 
 .template-switcher select:focus {
     border-color: var(--primary);
+}
+
+/* ===== 色彩主题选择器 ===== */
+.theme-picker {
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+.theme-picker label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.theme-swatches {
+    display: flex;
+    gap: 6px;
+}
+
+.theme-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    outline: none;
+}
+
+.theme-swatch:hover {
+    transform: scale(1.15);
+}
+
+.theme-swatch.active {
+    border-color: var(--text);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--text);
+}
+
+/* ===== 字体选择器 ===== */
+.font-picker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.font-picker label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.font-picker select {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    background: var(--surface);
+    cursor: pointer;
+    outline: none;
+    max-width: 140px;
+}
+
+.font-picker select:focus {
+    border-color: var(--primary);
+}
+
+/* ===== 文字色彩选择器 ===== */
+.color-picker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.color-picker-wrap label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.text-color-swatches {
+    display: flex;
+    gap: 5px;
+}
+
+.text-color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    outline: none;
+}
+
+.text-color-swatch:hover {
+    transform: scale(1.2);
+}
+
+.text-color-swatch.active {
+    border-color: var(--text);
+    box-shadow: 0 0 0 2px white, 0 0 0 3px var(--text);
 }
 
 .toolbar-right {
