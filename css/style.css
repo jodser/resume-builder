@@ -1,0 +1,441 @@
+/* ===== 全局重置与基础 ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --bg: #f5f5f5;
+    --surface: #ffffff;
+    --border: #e0e0e0;
+    --text: #1a1a2e;
+    --text-secondary: #666;
+    --text-light: #999;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
+    --radius: 8px;
+    --radius-sm: 4px;
+    --transition: all 0.2s ease;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ===== 顶部工具栏 ===== */
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.toolbar-left .logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.toolbar-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.template-switcher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.template-switcher select {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    background: var(--surface);
+    cursor: pointer;
+    outline: none;
+}
+
+.template-switcher select:focus {
+    border-color: var(--primary);
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.save-status {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.save-status.saving {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.save-status.error {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+/* ===== 按钮 ===== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    background: var(--surface);
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background: #f0f0f0;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.btn-add {
+    width: 100%;
+    justify-content: center;
+    padding: 10px;
+    border: 2px dashed var(--border);
+    background: transparent;
+    color: var(--primary);
+    margin-top: 8px;
+}
+
+.btn-add:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+}
+
+.btn-remove {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #ef4444;
+    background: transparent;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-remove:hover {
+    background: #fef2f2;
+}
+
+/* ===== 主容器 ===== */
+.main-container {
+    display: flex;
+    height: calc(100vh - 56px);
+    overflow: hidden;
+}
+
+/* ===== 左侧编辑面板 ===== */
+.editor-panel {
+    width: 420px;
+    min-width: 380px;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 16px;
+    flex-shrink: 0;
+}
+
+.editor-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.editor-panel::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+/* ===== 表单区块 ===== */
+.form-section {
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #fafafa;
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition);
+}
+
+.section-header:hover {
+    background: #f0f0f0;
+}
+
+.section-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.toggle-icon {
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+}
+
+.form-section.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.form-section.collapsed .section-body {
+    display: none;
+}
+
+.section-body {
+    padding: 16px;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: inherit;
+    transition: var(--transition);
+    outline: none;
+    background: var(--surface);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* ===== 条目卡片（教育/工作/项目等） ===== */
+.entry-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+    background: #fafafa;
+    position: relative;
+}
+
+.entry-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.entry-card .card-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.entry-card .form-group {
+    margin-bottom: 8px;
+}
+
+.entry-card .form-group:last-child {
+    margin-bottom: 0;
+}
+
+/* ===== 技能标签 ===== */
+.skill-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.skill-entry .skill-name-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+}
+
+.skill-entry .skill-name-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.skill-entry .btn-remove {
+    flex-shrink: 0;
+}
+
+/* ===== 右侧预览面板 ===== */
+.preview-panel {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    background: #e8e8e8;
+    display: flex;
+    justify-content: center;
+}
+
+.preview-container {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
+}
+
+.resume-preview {
+    width: 100%;
+    min-height: 297mm;
+    padding: 0;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 900px) {
+    .main-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .editor-panel {
+        width: 100%;
+        min-width: unset;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: 50vh;
+    }
+
+    .preview-panel {
+        padding: 16px;
+    }
+
+    .preview-container {
+        width: 100%;
+        min-height: auto;
+    }
+
+    .toolbar {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 8px 16px;
+        gap: 8px;
+    }
+
+    .toolbar-left,
+    .toolbar-center,
+    .toolbar-right {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media print {
+    .toolbar,
+    .editor-panel {
+        display: none !important;
+    }
+
+    .preview-panel {
+        padding: 0;
+        background: white;
+        overflow: visible;
+    }
+
+    .preview-container {
+        box-shadow: none;
+        width: 100%;
+    }
+
+    .main-container {
+        height: auto;
+    }
+
+    .resume-preview {
+        padding: 0;
+    }
+}
