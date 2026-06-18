@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>PDFImporter 单元测试</title>
+    <style>
+        body { font-family: monospace; padding: 24px; background: #f5f5f5; }
+        #output { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-size: 14px; line-height: 1.6; }
+        .summary { margin-top: 16px; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 16px; }
+        .summary.pass { background: #dcfce7; color: #166534; }
+        .summary.fail { background: #fef2f2; color: #991b1b; }
+    </style>
+</head>
+<body>
+    <h1>📋 PDFImporter 单元测试</h1>
+    <div id="output">加载中...</div>
+    <div id="summary" class="summary"></div>
+
+    <script>
+        // 拦截 console.log/error 到页面
+        (function() {
+            const output = document.getElementById('output');
+            const origLog = console.log;
+            const origError = console.error;
+            const lines = [];
+            console.log = function() {
+                const msg = Array.from(arguments).join(' ');
+                lines.push(msg);
+                output.textContent = lines.join('\n');
+                origLog.apply(console, arguments);
+            };
+            console.error = function() {
+                const msg = '❌ ' + Array.from(arguments).join(' ');
+                lines.push(msg);
+                output.textContent = lines.join('\n');
+                origError.apply(console, arguments);
+            };
+        })();
+    </script>
+    <script src="js/templates.js"></script>
+    <script src="js/pdf-importer.js"></script>
+    <script src="js/pdf-importer.test.js"></script>
+    <script>
+        // 汇总结果
+        setTimeout(() => {
+            const output = document.getElementById('output');
+            const text = output.textContent;
+            const passed = (text.match(/✓/g) || []).length;
+            const failed = (text.match(/✗/g) || []).length;
+            const total = passed + failed;
+
+            const summary = document.getElementById('summary');
+            if (failed === 0) {
+                summary.className = 'summary pass';
+                summary.textContent = `✅ 全部通过 — ${total}/${total} 测试通过`;
+            } else {
+                summary.className = 'summary fail';
+                summary.textContent = `❌ ${failed} 个测试失败 — ${passed}/${total} 通过`;
+            }
+        }, 100);
+    </script>
+</body>
+</html>

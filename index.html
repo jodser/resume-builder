@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在线简历制作</title>
     <link rel="stylesheet" href="css/style.css">
+    <!-- PDF.js 用于 PDF 导入解析 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+            onerror="console.error('pdf.js CDN 加载失败，PDF 导入功能不可用')"></script>
+    <script>
+        try {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        } catch(e) {
+            console.warn('pdf.js 未加载，PDF 导入功能不可用');
+        }
+    </script>
     <!-- 模板样式会在运行时动态加载 -->
 </head>
 <body>
@@ -48,6 +58,10 @@
         </div>
         <div class="toolbar-right">
             <span id="saveStatus" class="save-status">已保存</span>
+            <button id="importPdfBtn" class="btn btn-import" title="从本地 PDF 文件导入简历数据">
+                📂 导入 PDF
+            </button>
+            <input type="file" id="pdfFileInput" accept=".pdf" style="display:none">
             <button id="exportBtn" class="btn btn-primary" title="导出为 PDF">📥 导出 PDF</button>
             <button id="resetBtn" class="btn btn-secondary" title="重置所有数据">🔄 重置</button>
         </div>
@@ -144,6 +158,12 @@
                     <button class="btn btn-add" id="addProject">+ 添加项目</button>
                 </div>
             </section>
+
+            <!-- 自定义模块容器 -->
+            <div id="customSectionsContainer"></div>
+
+            <!-- 添加自定义模块 -->
+            <button class="btn btn-add-module" id="addCustomModuleBtn">🧩 + 添加自定义模块</button>
         </aside>
 
         <!-- 右侧预览面板 -->
@@ -154,8 +174,91 @@
         </main>
     </div>
 
+    <!-- 自定义模块创建弹窗 -->
+    <div id="customModuleOverlay" class="loading-overlay" style="display:none">
+        <div class="choice-modal cm-modal">
+            <div class="choice-header">
+                <span class="choice-icon">🧩</span>
+                <h2>创建自定义模块</h2>
+                <p class="choice-subtitle">自定义章节名称和字段</p>
+            </div>
+            <div class="choice-body">
+                <div class="form-group">
+                    <label>模块名称</label>
+                    <input type="text" id="cmName" placeholder="例如：获奖荣誉、语言能力、证书" class="cm-input">
+                </div>
+                <div class="form-group">
+                    <label>字段设置 <span class="cm-hint">（每行一个字段，格式：字段名:类型）</span></label>
+                    <textarea id="cmFields" rows="5" class="cm-textarea" placeholder="奖项名称&#10;日期&#10;描述:textarea">名称&#10;描述:textarea</textarea>
+                </div>
+                <div class="cm-presets">
+                    <span class="cm-preset-label">预设：</span>
+                    <button class="cm-preset" data-fields="证书名称&#10;颁发机构&#10;获得时间&#10;描述:textarea">📜 证书</button>
+                    <button class="cm-preset" data-fields="语言&#10;水平&#10;描述:textarea">🌐 语言</button>
+                    <button class="cm-preset" data-fields="奖项名称&#10;颁发单位&#10;获奖时间&#10;描述:textarea">🏆 获奖</button>
+                    <button class="cm-preset" data-fields="兴趣爱好&#10;描述:textarea">🎯 兴趣</button>
+                </div>
+            </div>
+            <div class="choice-footer">
+                <button id="cmCancelBtn" class="btn btn-secondary">取消</button>
+                <button id="cmConfirmBtn" class="btn btn-primary">✅ 创建模块</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF 导入加载遮罩 -->
+    <div id="loadingOverlay" class="loading-overlay" style="display:none">
+        <div class="loading-modal">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">正在导入 PDF...</div>
+            <div class="loading-progress-bar">
+                <div class="loading-progress-fill" id="loadingProgress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF 导入模板选择弹窗 -->
+    <div id="importChoiceOverlay" class="loading-overlay" style="display:none">
+        <div class="choice-modal">
+            <div class="choice-header">
+                <span class="choice-icon">📋</span>
+                <h2>PDF 数据已提取</h2>
+                <p class="choice-subtitle">选择导入后使用的模板样式</p>
+            </div>
+            <div class="choice-body">
+                <label class="choice-option" id="choiceImported">
+                    <input type="radio" name="importTemplate" value="imported" checked>
+                    <div class="choice-option-content">
+                        <span class="choice-option-title">📄 使用自动生成的模板</span>
+                        <span class="choice-option-desc">根据 PDF 布局生成对应风格的模板</span>
+                    </div>
+                </label>
+                <label class="choice-option" id="choiceBuiltin">
+                    <input type="radio" name="importTemplate" value="builtin">
+                    <div class="choice-option-content">
+                        <span class="choice-option-title">🎨 使用本站模板</span>
+                        <span class="choice-option-desc">选择已有的模板渲染数据</span>
+                    </div>
+                </label>
+                <div class="choice-builtin-picker" id="choiceBuiltinPicker" style="display:none">
+                    <label for="choiceTemplateSelect">选择模板：</label>
+                    <select id="choiceTemplateSelect">
+                        <option value="classic">简约经典</option>
+                        <option value="modern">现代清新</option>
+                        <option value="professional">专业商务</option>
+                    </select>
+                </div>
+            </div>
+            <div class="choice-footer">
+                <button id="choiceCancelBtn" class="btn btn-secondary">取消</button>
+                <button id="choiceConfirmBtn" class="btn btn-primary">✅ 确认导入</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/storage.js"></script>
     <script src="js/templates.js"></script>
+    <script src="js/pdf-importer.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

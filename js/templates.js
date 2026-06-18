@@ -213,7 +213,67 @@ const Templates = {
                 color: #555;
                 white-space: pre-wrap;
             }
+            /* ===== 自定义模块共享样式 ===== */
+            .resume-template .cs-section-title {
+                font-size: 16px;
+                font-weight: 700;
+                padding-bottom: 6px;
+                margin-bottom: 12px;
+                border-bottom: 2px solid #e0e7ff;
+                color: #1e293b;
+            }
+            .resume-template .cs-field-row {
+                margin-bottom: 3px;
+                font-size: 13px;
+                color: #555;
+                white-space: pre-wrap;
+                line-height: 1.6;
+            }
+            .resume-template .cs-field-label {
+                font-weight: 600;
+                color: #334155;
+                margin-right: 6px;
+            }
         `;
+    },
+
+    /**
+     * 渲染自定义模块章节（通用，会被所有模板使用）
+     * @param {Array} customSections
+     * @param {string} cssPrefix - 模板 CSS 前缀（如 'classic-'）
+     * @param {Object} theme - 可选配色主题
+     * @returns {string} HTML
+     */
+    renderCustomSections(customSections, cssPrefix, theme) {
+        if (!customSections || customSections.length === 0) return '';
+        const accentColor = theme?.accent || '#4f46e5';
+        const borderColor = theme?.accentLight || '#e0e7ff';
+        const titleColor = theme?.titleColor || '#1e293b';
+        const textColor = theme?.textColor || '#555';
+
+        return customSections.map(section => {
+            const entries = section.entries || [];
+            const fields = section.fields || [];
+            if (entries.length === 0) return '';
+
+            return `
+            <div class="${cssPrefix}section cs-section">
+                <h2 class="${cssPrefix}section-title cs-section-title" style="border-bottom-color:${borderColor};color:${titleColor}">🧩 ${section.title || '自定义'}</h2>
+                ${entries.map(entry => `
+                <div class="${cssPrefix}item cs-field-row">
+                    ${fields.map(f => {
+                        const val = entry[f.name] || '';
+                        if (!val) return '';
+                        // 如果字段名很短，显示标签
+                        if (f.label && f.label.length <= 6 && fields.length > 1) {
+                            return `<div><span class="cs-field-label">${f.label}：</span>${val}</div>`;
+                        }
+                        return `<div>${val}</div>`;
+                    }).filter(s => s).join('')}
+                </div>
+                `).join('')}
+            </div>`;
+        }).join('');
     }
 };
 
@@ -227,6 +287,7 @@ Templates.register('classic', '简约经典', (data) => {
     const experience = d.experience || [];
     const skills = d.skills || [];
     const projects = d.projects || [];
+    const customSections = d.customSections || [];
 
     return `
         <div class="classic-resume">
@@ -318,6 +379,10 @@ Templates.register('classic', '简约经典', (data) => {
                     `).join('')}
                 </div>
             </div>` : ''}
+
+            <!-- 自定义模块 -->
+            ${Templates.renderCustomSections(customSections, 'classic-')}
+
         </div>
     `;
 }, `
@@ -351,6 +416,7 @@ Templates.register('modern', '现代清新', (data, themeId) => {
     const experience = d.experience || [];
     const skills = d.skills || [];
     const projects = d.projects || [];
+    const customSections = d.customSections || [];
     const theme = ColorThemes[themeId] || ColorThemes.navy;
 
     const vars = `
@@ -456,6 +522,9 @@ Templates.register('modern', '现代清新', (data, themeId) => {
                         `).join('')}
                     </div>` : ''}
                 </div>
+
+                <!-- 自定义模块 -->
+                ${Templates.renderCustomSections(customSections, 'modern-', theme)}
             </div>
         </div>
     `;
@@ -506,6 +575,7 @@ Templates.register('professional', '专业商务', (data, themeId) => {
     const experience = d.experience || [];
     const skills = d.skills || [];
     const projects = d.projects || [];
+    const customSections = d.customSections || [];
     const theme = ColorThemes[themeId] || ColorThemes.navy;
 
     // 将主题色注入为 CSS 变量
@@ -625,6 +695,9 @@ Templates.register('professional', '专业商务', (data, themeId) => {
                     </div>
                 </div>
             </div>
+
+            <!-- 自定义模块 -->
+            ${Templates.renderCustomSections(customSections, 'pro-', theme)}
         </div>
     `;
 }, `
